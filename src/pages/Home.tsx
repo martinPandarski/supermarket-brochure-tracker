@@ -72,7 +72,7 @@ export default function Home() {
 
   const activeFiltersCount =
     selectedStores.length +
-    selectedCategory.length +
+    selectedCategory ? 1 : 0 +
     (priceRange[0] > 0 || priceRange[1] < 20 ? 1 : 0)
 
   if (isPending) {

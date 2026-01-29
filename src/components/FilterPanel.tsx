@@ -9,6 +9,13 @@ import { api } from "../../axiosSetup";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "../types";
 
+function toTitleCase(value: string) {
+  return value
+    .replace(/[-_]/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 interface FilterPanelProps {
   selectedStores: string[];
   selectedCategory: string;
@@ -96,27 +103,38 @@ export function FilterPanel({
       {/* Categories */}
       {Array.isArray(categories) && (
         <div>
-          <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-            Categories
-          </h3>
-          <div className="space-y-2.5">
-            {categories.map((category) => (
-              <div key={category.name} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`category-${category}`}
-                  checked={selectedCategory === category.name}
-                  onCheckedChange={() => onCategoryToggle(category.name)}
-                />
-                <Label
-                  htmlFor={`category-${category}`}
-                  className="cursor-pointer text-sm sm:text-base dark:text-gray-300 capitalize"
-                >
-                  {category.name?.toLowerCase()}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
+  <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
+    Categories
+  </h3>
+
+  <div
+    className="
+      space-y-2.5
+      max-h-[50vh]
+      overflow-y-auto
+      pr-1
+      sm:max-h-none
+      sm:overflow-visible
+    "
+  >
+    {categories.map((category) => (
+      <div key={category.name} className="flex items-center space-x-2">
+        <Checkbox
+          id={`category-${category.name}`}
+          checked={selectedCategory === category.name}
+          onCheckedChange={() => onCategoryToggle(category.name)}
+        />
+        <Label
+          htmlFor={`category-${category.name}`}
+          className="cursor-pointer text-sm sm:text-base dark:text-gray-300"
+        >
+          {toTitleCase(category.name)}
+        </Label>
+      </div>
+    ))}
+  </div>
+</div>
+
       )}
 
       {/* Price Range */}
