@@ -16,9 +16,11 @@ export default function ProductDetail() {
     error,
   } = useQuery({
     retry: false,
-    queryKey: ["product"],
+    queryKey: ["product", id],
     queryFn: async () => {
-      const { data } = await api.get(`/products/${id}`);
+      const { data } = await api.get(`/products`, {
+        params: {id}
+      });
 
       return data?.data as Product;
     },

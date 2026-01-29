@@ -3,17 +3,18 @@ import axios from "axios"
 
 export const handler: Handler = async (event) => {
   try {
-      console.log("API KEY PRESENT:", !!process.env.VITE_API_KEY, process.env.VITE_API_KEY)
+    const { id, ...restParams } = event.queryStringParameters || {}
 
-    const response = await axios.get(
-      `${process.env.VITE_API_BASE_URL}products`,
-      {
-        params: event.queryStringParameters,
-        headers: {
-          Authorization: `Bearer ${process.env.VITE_API_KEY}`,
-        },
-      }
-    )
+    const url = id
+      ? `${process.env.VITE_API_BASE_URL}products/${id}`
+      : `${process.env.VITE_API_BASE_URL}products`
+
+    const response = await axios.get(url, {
+      params: id ? undefined : restParams,
+      headers: {
+        Authorization: `Bearer ${process.env.VITE_API_KEY}`,
+      },
+    })
 
     return {
       statusCode: 200,
@@ -25,9 +26,11 @@ export const handler: Handler = async (event) => {
   } catch (error: any) {
     return {
       statusCode: error.response?.status || 500,
-      body: JSON.stringify({
-        message: "Failed to fetch products",
-      }),
+      body: JSON.stringify(
+        error.response?.data || {
+          message: "Failed to fetch product(s)",
+        }
+      ),
     }
   }
 }
