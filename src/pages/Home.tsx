@@ -30,6 +30,7 @@ import {
 import { api } from "../../axiosSetup"
 import { Product } from "../types"
 import { useDebounce } from "../hooks/useDebounce"
+import getPaginationRange from "../utils/paginationHelper"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")

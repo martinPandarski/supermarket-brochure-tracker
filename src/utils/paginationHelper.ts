@@ -28,3 +28,5 @@ function getPaginationRange(
 
   return range
 }
+
+export default getPaginationRange
