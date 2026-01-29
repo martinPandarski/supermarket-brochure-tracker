@@ -3,6 +3,8 @@ import axios from "axios"
 
 export const handler: Handler = async (event) => {
   try {
+      console.log("API KEY PRESENT:", !!process.env.VITE_API_KEY, process.env.VITE_API_KEY)
+
     const response = await axios.get(
       `${process.env.VITE_API_BASE_URL}products`,
       {
