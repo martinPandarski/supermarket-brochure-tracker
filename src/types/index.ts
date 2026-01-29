@@ -16,12 +16,7 @@ export interface Product {
     valid_from: string;
     valid_until: string;
   }
-  supermarket:{
-    id: number;
-    logo: string;
-    name: string;
-    slug: string;
-  }
+  supermarket: Supermarket
 
 old_price_eur: number;
 old_price_lev:number;
@@ -39,4 +34,14 @@ export interface Store {
 export interface Category {
   name: string;
   products_count: number
+}
+
+type SupermarketNames = 'Tmarket' | 'Zora' | 'Lidl' | 'Kaufland' | 'Fantastico' | 'Billa'
+type SupermarketSlugs = Lowercase<'Tmarket' | 'Zora' | 'Lidl' | 'Kaufland' | 'Fantastico' | 'Billa'>
+
+export interface Supermarket {
+  id: string;
+  name: SupermarketNames
+  slug: SupermarketSlugs;
+  logo: string;
 }

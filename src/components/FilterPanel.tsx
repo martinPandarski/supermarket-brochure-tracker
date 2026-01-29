@@ -1,5 +1,4 @@
 import { X } from "lucide-react";
-import { stores, categories } from "../data/mockData";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
@@ -7,17 +6,17 @@ import { Slider } from "./ui/slider";
 import { useState } from "react";
 import { api } from "../../axiosSetup";
 import { useQuery } from "@tanstack/react-query";
-import { Category } from "../types";
+import { Category, Supermarket } from "../types";
 
 function toTitleCase(value: string) {
   return value
     .replace(/[-_]/g, " ")
     .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface FilterPanelProps {
-  selectedStores: string[];
+  selectedStore: string;
   selectedCategory: string;
   priceRange: [number, number];
   onStoreToggle: (store: string) => void;
@@ -27,7 +26,7 @@ interface FilterPanelProps {
 }
 
 export function FilterPanel({
-  selectedStores,
+  selectedStore,
   selectedCategory,
   priceRange,
   onStoreToggle,
@@ -35,11 +34,7 @@ export function FilterPanel({
   onPriceRangeChange,
   onReset,
 }: FilterPanelProps) {
-  const {
-    data: categories,
-    isPending,
-    error,
-  } = useQuery({
+  const { data: categories } = useQuery({
     retry: false,
     queryKey: ["categories"],
     queryFn: async () => {
@@ -48,10 +43,21 @@ export function FilterPanel({
       return data?.data as Category[];
     },
   });
+
+  const { data: supermarkets } = useQuery({
+    retry: false,
+    queryKey: ["supermarkets"],
+    queryFn: async () => {
+      const { data } = await api.get(`/supermarkets`);
+
+      return data?.data as Supermarket[];
+    },
+  });
+
   const hasActiveFilters =
-    selectedStores.length > 0 ||
+    selectedStore.length > 0 ||
     selectedCategory.length > 0 ||
-    priceRange[0] > 0 ||
+    priceRange[0] > 1 ||
     priceRange[1] < 20;
 
   const [innnerSliderValue, setInnerSliderValue] = useState(priceRange);
@@ -76,39 +82,40 @@ export function FilterPanel({
       </div>
 
       {/* Stores */}
-      <div>
-        <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-          Stores
-        </h3>
-        <div className="space-y-2.5">
-          {stores.map((store) => (
-            <div key={store.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`store-${store.id}`}
-                checked={selectedStores.includes(store.name)}
-                onCheckedChange={() => onStoreToggle(store.name)}
-              />
-              <Label
-                htmlFor={`store-${store.id}`}
-                className="cursor-pointer flex items-center gap-2 text-sm sm:text-base dark:text-gray-300"
-              >
-                <span className="text-lg">{store.logo}</span>
-                <span>{store.name}</span>
-              </Label>
-            </div>
-          ))}
+      {Array.isArray(supermarkets) && (
+        <div>
+          <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
+            Supermarkets
+          </h3>
+          <div className="space-y-2.5">
+            {supermarkets.map((store) => (
+              <div key={store.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`store-${store.id}`}
+                  checked={selectedStore = store.slug}
+                  onCheckedChange={() => onStoreToggle(store.slug)}
+                />
+                <Label
+                  htmlFor={`store-${store.id}`}
+                  className="cursor-pointer flex items-center gap-2 text-sm sm:text-base dark:text-gray-300"
+                >
+                  <span>{store.name}</span>
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Categories */}
       {Array.isArray(categories) && (
         <div>
-  <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-    Categories
-  </h3>
+          <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
+            Categories
+          </h3>
 
-  <div
-    className="
+          <div
+            className="
       space-y-2.5
       max-h-[50vh]
       overflow-y-auto
@@ -116,25 +123,24 @@ export function FilterPanel({
       sm:max-h-none
       sm:overflow-visible
     "
-  >
-    {categories.map((category) => (
-      <div key={category.name} className="flex items-center space-x-2">
-        <Checkbox
-          id={`category-${category.name}`}
-          checked={selectedCategory === category.name}
-          onCheckedChange={() => onCategoryToggle(category.name)}
-        />
-        <Label
-          htmlFor={`category-${category.name}`}
-          className="cursor-pointer text-sm sm:text-base dark:text-gray-300"
-        >
-          {toTitleCase(category.name)}
-        </Label>
-      </div>
-    ))}
-  </div>
-</div>
-
+          >
+            {categories.map((category) => (
+              <div key={category.name} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`category-${category.name}`}
+                  checked={selectedCategory === category.name}
+                  onCheckedChange={() => onCategoryToggle(category.name)}
+                />
+                <Label
+                  htmlFor={`category-${category.name}`}
+                  className="cursor-pointer text-sm sm:text-base dark:text-gray-300"
+                >
+                  {toTitleCase(category.name)}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Price Range */}

@@ -19,45 +19,46 @@ import { Badge } from "../components/ui/badge"
 
 import { api } from "../../axiosSetup"
 import { Product } from "../types"
+import { useDebounce } from "../hooks/useDebounce"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedStores, setSelectedStores] = useState<string[]>([])
+  const [selectedStore, setSelectedStore] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [priceRange, setPriceRange] = useState<[number, number]>([1, 100])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  const { data, isPending, error } = useQuery({
+
+const debouncedSearch = useDebounce(searchQuery, 400)
+
+  const { data: products, isPending, error } = useQuery({
     retry: false,
     queryKey: [
       "products",
-      searchQuery,
-      selectedStores,
+      debouncedSearch,
+      selectedStore,
       selectedCategory,
       priceRange,
     ],
     queryFn: async () => {
       const { data } = await api.get("/products", {
         params: {
-          search: searchQuery || undefined,
-          store: selectedStores.length ? selectedStores : undefined,
-          category: selectedCategory.length ? selectedCategory : undefined,
+          search: debouncedSearch || undefined,
+          store: selectedStore.length > 0 ? selectedStore : undefined,
+          category: selectedCategory.length > 0 ? selectedCategory : undefined,
           min_price: priceRange[0],
           max_price: priceRange[1],
         },
       })
 
-      return data
+      return data?.data as Product[]
     },
   })
 
-  const products = (data?.data ?? []) as Product[]
-  // const products = [];
 
   const handleStoreToggle = (store: string) => {
-    setSelectedStores((prev) =>
-      prev.includes(store) ? prev.filter((s) => s !== store) : [...prev, store]
-    )
+    setSelectedStore(store)
+    
   }
 
   const handleCategoryToggle = (category: string) => {
@@ -65,15 +66,15 @@ export default function Home() {
   }
 
   const handleResetFilters = () => {
-    setSelectedStores([])
+    setSelectedStore('')
     setSelectedCategory('')
     setPriceRange([1, 20])
   }
 
   const activeFiltersCount =
-    selectedStores.length +
-    selectedCategory ? 1 : 0 +
-    (priceRange[0] > 0 || priceRange[1] < 20 ? 1 : 0)
+    selectedStore.length > 0 ? 1 : 0+
+    selectedCategory.length > 0 ? 1 : 0 +
+    (priceRange[0] > 1 || priceRange[1] < 20 ? 1 : 0)
 
   if (isPending) {
     return (
@@ -131,7 +132,7 @@ export default function Home() {
 
                 <div className="mt-4">
                   <FilterPanel
-                    selectedStores={selectedStores}
+                    selectedStore={selectedStore}
                     selectedCategory={selectedCategory}
                     priceRange={priceRange}
                     onStoreToggle={handleStoreToggle}
@@ -153,7 +154,7 @@ export default function Home() {
           <aside className="hidden lg:block">
             <div className="sticky top-32">
               <FilterPanel
-                selectedStores={selectedStores}
+                selectedStore={selectedStore}
                 selectedCategory={selectedCategory}
                 priceRange={priceRange}
                 onStoreToggle={handleStoreToggle}
