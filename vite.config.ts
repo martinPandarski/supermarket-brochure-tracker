@@ -53,14 +53,14 @@
       target: 'esnext',
       outDir: 'build',
     },
-    server: {
-    proxy: {
-      "/api": {
-        target: "https://prices.alexandergekov.com",
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
-    },
-  },
+  //   server: {
+  //   proxy: {
+  //     "/api": {
+  //       target: "https://prices.alexandergekov.com",
+  //       changeOrigin: true,
+  //       secure: true,
+  //       rewrite: (path) => path.replace(/^\/api/, ""),
+  //     },
+  //   },
+  // },
   });
