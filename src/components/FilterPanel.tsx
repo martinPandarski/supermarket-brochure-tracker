@@ -9,11 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Category, Supermarket } from "../types";
 
 function toTitleCase(value: string) {
-  if (!value) return value
+  if (!value) return value;
 
-  return value[0].toUpperCase() + value.slice(1).toLowerCase()
+  return value[0].toUpperCase() + value.slice(1).toLowerCase();
 }
-
 
 interface FilterPanelProps {
   selectedStore: string;
@@ -88,21 +87,24 @@ export function FilterPanel({
             Supermarkets
           </h3>
           <div className="space-y-2.5">
-            {supermarkets.map((store) => (
-              <div key={store.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`store-${store.id}`}
-                  checked={selectedStore === store.slug}
-                  onCheckedChange={() => onStoreToggle(store.slug)}
-                />
-                <Label
-                  htmlFor={`store-${store.id}`}
-                  className="cursor-pointer flex items-center gap-2 text-sm sm:text-base dark:text-gray-300"
-                >
-                  <span>{store.name}</span>
-                </Label>
-              </div>
-            ))}
+            {supermarkets.map((store) => {
+              const isChecked = selectedStore === store.slug
+              return (
+                <div key={store.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`store-${store.id}`}
+                    checked={isChecked}
+                    onCheckedChange={() => onStoreToggle(isChecked ? '' : store.slug)}
+                  />
+                  <Label
+                    htmlFor={`store-${store.id}`}
+                    className="cursor-pointer flex items-center gap-2 text-sm sm:text-base dark:text-gray-300"
+                  >
+                    <span>{store.name}</span>
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -124,21 +126,29 @@ export function FilterPanel({
       sm:overflow-visible
     "
           >
-            {categories.map((category) => (
-              <div key={category.name} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`category-${category.name}`}
-                  checked={selectedCategory === category.name}
-                  onCheckedChange={() => onCategoryToggle(category.name)}
-                />
-                <Label
-                  htmlFor={`category-${category.name}`}
-                  className="cursor-pointer text-sm sm:text-base dark:text-gray-300"
+            {categories.map((category) => {
+              const isChecked = selectedCategory === category.name;
+              return (
+                <div
+                  key={category.name}
+                  className="flex items-center space-x-2"
                 >
-                  {toTitleCase(category.name)}
-                </Label>
-              </div>
-            ))}
+                  <Checkbox
+                    id={`category-${category.name}`}
+                    checked={isChecked}
+                    onCheckedChange={() => {
+                      onCategoryToggle(isChecked ? "" : category.name);
+                    }}
+                  />
+                  <Label
+                    htmlFor={`category-${category.name}`}
+                    className="cursor-pointer text-sm sm:text-base dark:text-gray-300"
+                  >
+                    {toTitleCase(category.name)}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

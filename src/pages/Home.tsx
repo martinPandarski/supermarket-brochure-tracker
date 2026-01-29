@@ -20,6 +20,7 @@ import { Badge } from "../components/ui/badge"
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -200,54 +201,61 @@ export default function Home() {
                 </div>
 
                 {/* Pagination */}
-                {meta && meta.total_pages > 1 && (
-                  <Pagination className="mt-8">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                        size={'default'}
-                          href="#"
-                          aria-disabled={page === 1}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (page > 1) setPage(page - 1)
-                          }}
-                        />
-                      </PaginationItem>
+            {meta && meta.total_pages > 1 && (
+  <Pagination className="mt-8">
+    <PaginationContent className="flex-wrap">
+      {/* Previous */}
+      <PaginationItem>
+        <PaginationPrevious
+            size='default'
+          href="#"
+          aria-disabled={page === 1}
+          onClick={(e) => {
+            e.preventDefault()
+            if (page > 1) setPage(page - 1)
+          }}
+        />
+      </PaginationItem>
 
-                      {Array.from({ length: meta.total_pages }).map((_, i) => {
-                        const pageNumber = i + 1
-                        return (
-                          <PaginationItem key={pageNumber}>
-                            <PaginationLink
-                            size={'default'}
-                              href="#"
-                              isActive={page === pageNumber}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                setPage(pageNumber)
-                              }}
-                            >
-                              {pageNumber}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      })}
+      {/* Page numbers with ellipsis */}
+      {getPaginationRange(page, meta.total_pages).map((item, index) =>
+        item === "ellipsis" ? (
+          <PaginationItem key={`ellipsis-${index}`}>
+            <PaginationEllipsis />
+          </PaginationItem>
+        ) : (
+          <PaginationItem key={item}>
+            <PaginationLink
+            size='default'
+              href="#"
+              isActive={page === item}
+              onClick={(e) => {
+                e.preventDefault()
+                setPage(item)
+              }}
+            >
+              {item}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      )}
 
-                      <PaginationItem>
-                        <PaginationNext
-                          size={'default'}
-                          href="#"
-                          aria-disabled={page === meta.total_pages}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (page < meta.total_pages) setPage(page + 1)
-                          }}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                )}
+      {/* Next */}
+      <PaginationItem>
+        <PaginationNext
+            size='default'
+          href="#"
+          aria-disabled={page === meta.total_pages}
+          onClick={(e) => {
+            e.preventDefault()
+            if (page < meta.total_pages) setPage(page + 1)
+          }}
+        />
+      </PaginationItem>
+    </PaginationContent>
+  </Pagination>
+)}
+
               </>
             )}
           </main>
