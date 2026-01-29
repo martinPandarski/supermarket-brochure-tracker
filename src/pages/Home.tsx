@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { ShoppingBag, SlidersHorizontal } from "lucide-react"
 
@@ -17,21 +17,35 @@ import {
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../components/ui/pagination"
+
 import { api } from "../../axiosSetup"
 import { Product } from "../types"
 import { useDebounce } from "../hooks/useDebounce"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedStore, setSelectedStore] = useState<string>('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [selectedStore, setSelectedStore] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
   const [priceRange, setPriceRange] = useState<[number, number]>([1, 100])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [page, setPage] = useState(1)
 
+  const debouncedSearch = useDebounce(searchQuery, 400)
 
-const debouncedSearch = useDebounce(searchQuery, 400)
+  // Reset page when filters/search change
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, selectedStore, selectedCategory, priceRange])
 
-  const { data: products, isPending, error } = useQuery({
+  const { data, isPending, error } = useQuery({
     retry: false,
     queryKey: [
       "products",
@@ -39,42 +53,40 @@ const debouncedSearch = useDebounce(searchQuery, 400)
       selectedStore,
       selectedCategory,
       priceRange,
+      page,
     ],
     queryFn: async () => {
       const { data } = await api.get("/products", {
         params: {
           search: debouncedSearch || undefined,
-          store: selectedStore.length > 0 ? selectedStore : undefined,
-          category: selectedCategory.length > 0 ? selectedCategory : undefined,
+          supermarket: selectedStore || undefined,
+          category: selectedCategory || undefined,
           min_price: priceRange[0],
           max_price: priceRange[1],
+          page,
         },
       })
 
-      return data?.data as Product[]
+      return {
+        products: data.data as Product[],
+        meta: data.meta,
+      }
     },
   })
 
-
-  const handleStoreToggle = (store: string) => {
-    setSelectedStore(store)
-    
-  }
-
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategory(category)
-  }
+  const products = data?.products ?? []
+  const meta = data?.meta
 
   const handleResetFilters = () => {
-    setSelectedStore('')
-    setSelectedCategory('')
-    setPriceRange([1, 20])
+    setSelectedStore("")
+    setSelectedCategory("")
+    setPriceRange([1, 100])
   }
 
   const activeFiltersCount =
-    selectedStore.length > 0 ? 1 : 0+
-    selectedCategory.length > 0 ? 1 : 0 +
-    (priceRange[0] > 1 || priceRange[1] < 20 ? 1 : 0)
+    (selectedStore ? 1 : 0) +
+    (selectedCategory ? 1 : 0) +
+    (priceRange[0] > 1 || priceRange[1] < 100 ? 1 : 0)
 
   if (isPending) {
     return (
@@ -135,8 +147,8 @@ const debouncedSearch = useDebounce(searchQuery, 400)
                     selectedStore={selectedStore}
                     selectedCategory={selectedCategory}
                     priceRange={priceRange}
-                    onStoreToggle={handleStoreToggle}
-                    onCategoryToggle={handleCategoryToggle}
+                    onStoreToggle={setSelectedStore}
+                    onCategoryToggle={setSelectedCategory}
                     onPriceRangeChange={setPriceRange}
                     onReset={handleResetFilters}
                   />
@@ -157,8 +169,8 @@ const debouncedSearch = useDebounce(searchQuery, 400)
                 selectedStore={selectedStore}
                 selectedCategory={selectedCategory}
                 priceRange={priceRange}
-                onStoreToggle={handleStoreToggle}
-                onCategoryToggle={handleCategoryToggle}
+                onStoreToggle={setSelectedStore}
+                onCategoryToggle={setSelectedCategory}
                 onPriceRangeChange={setPriceRange}
                 onReset={handleResetFilters}
               />
@@ -168,8 +180,8 @@ const debouncedSearch = useDebounce(searchQuery, 400)
           {/* Products */}
           <main className="lg:col-span-3">
             <div className="mb-4 text-gray-600 dark:text-gray-400">
-              {products.length} product
-              {products.length !== 1 ? "s" : ""} found
+              {meta?.total ?? products.length} product
+              {meta?.total !== 1 ? "s" : ""} found
             </div>
 
             {products.length === 0 ? (
@@ -180,11 +192,63 @@ const debouncedSearch = useDebounce(searchQuery, 400)
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {meta && meta.total_pages > 1 && (
+                  <Pagination className="mt-8">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                        size={'default'}
+                          href="#"
+                          aria-disabled={page === 1}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (page > 1) setPage(page - 1)
+                          }}
+                        />
+                      </PaginationItem>
+
+                      {Array.from({ length: meta.total_pages }).map((_, i) => {
+                        const pageNumber = i + 1
+                        return (
+                          <PaginationItem key={pageNumber}>
+                            <PaginationLink
+                            size={'default'}
+                              href="#"
+                              isActive={page === pageNumber}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                setPage(pageNumber)
+                              }}
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          size={'default'}
+                          href="#"
+                          aria-disabled={page === meta.total_pages}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (page < meta.total_pages) setPage(page + 1)
+                          }}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
             )}
           </main>
         </div>

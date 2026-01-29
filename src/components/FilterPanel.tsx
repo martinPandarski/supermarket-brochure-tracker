@@ -9,11 +9,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Category, Supermarket } from "../types";
 
 function toTitleCase(value: string) {
-  return value
-    .replace(/[-_]/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  if (!value) return value
+
+  return value[0].toUpperCase() + value.slice(1).toLowerCase()
 }
+
 
 interface FilterPanelProps {
   selectedStore: string;
@@ -92,7 +92,7 @@ export function FilterPanel({
               <div key={store.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`store-${store.id}`}
-                  checked={selectedStore = store.slug}
+                  checked={selectedStore === store.slug}
                   onCheckedChange={() => onStoreToggle(store.slug)}
                 />
                 <Label
@@ -117,7 +117,7 @@ export function FilterPanel({
           <div
             className="
       space-y-2.5
-      max-h-[50vh]
+      max-h-[300px]
       overflow-y-auto
       pr-1
       sm:max-h-none

@@ -2,3 +2,5 @@
 /.env.development
 /.env.production
 /build
+# Local Netlify folder
+.netlify
