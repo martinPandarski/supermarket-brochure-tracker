@@ -157,15 +157,6 @@ export default function ProductDetail() {
                 </div>
               </div>
             </div>
-
-            {/* CTA Button */}
-            <Button className="w-full text-sm sm:text-base" size="lg">
-              View in Store
-            </Button>
-
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center mt-3 sm:mt-4">
-              * Price and availability may vary by location
-            </p>
           </div>
         </div>
       </main>
