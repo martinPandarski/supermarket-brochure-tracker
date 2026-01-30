@@ -62,24 +62,25 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Content
-        data-slot="select-content"
-        position={position}
-        side="bottom"
-        sideOffset={4}
-        avoidCollisions={false}
-        className={cn(
-          "z-50 rounded-md border shadow-md",
-          "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out",
-          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          className
-        )}
-        {...props}
-      >
+    <SelectPrimitive.Content
+    position="popper"
+    side="bottom"
+    sideOffset={4}
+    avoidCollisions={false}
+    className={cn(
+      "z-50 rounded-md border shadow-md",
+      "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",
+
+      "max-h-[240px] overflow-hidden",
+
+      "data-[state=open]:animate-in data-[state=closed]:animate-out",
+      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+      className
+    )}
+  >
         <SelectScrollUpButton />
-        <SelectPrimitive.Viewport className="p-1 max-h-[240px] overflow-y-auto overscroll-contain scrollbar-thin">
+        <SelectPrimitive.Viewport  className="p-2 h-full overflow-y-auto overscroll-contain scrollbar-thin">
           {children}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
