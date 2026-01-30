@@ -67,6 +67,7 @@ function SelectContent({
         position={position}
         side="bottom"
         sideOffset={4}
+        avoidCollisions={false}
         className={cn(
           "z-50 rounded-md border shadow-md",
           "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",

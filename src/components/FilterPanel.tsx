@@ -122,7 +122,7 @@ export function FilterPanel({
 
       {/* Categories (Select) */}
       {Array.isArray(categories) && (
-        <div>
+        <div style={{marginBottom: 10, marginTop: 10}}>
           <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
             Category
           </h3>
