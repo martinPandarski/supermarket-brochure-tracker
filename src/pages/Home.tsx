@@ -93,7 +93,7 @@ export default function Home() {
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading products…</p>
+        <p className="text-gray-500">Зареждане…</p>
       </div>
     )
   }
@@ -101,7 +101,7 @@ export default function Home() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Failed to load products</p>
+        <p className="text-red-500">Неуспешно зареждане</p>
       </div>
     )
   }

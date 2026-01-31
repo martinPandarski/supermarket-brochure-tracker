@@ -71,7 +71,7 @@ export function FilterPanel({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-base sm:text-lg dark:text-white">
-          Filters
+          Филтри
         </h2>
 
         {hasActiveFilters && (
@@ -82,7 +82,7 @@ export function FilterPanel({
             className="h-8 px-2 text-xs sm:text-sm"
           >
             <X className="size-4 mr-1" />
-            Reset
+            Нулиране
           </Button>
         )}
       </div>
@@ -91,7 +91,7 @@ export function FilterPanel({
       {Array.isArray(supermarkets) && (
         <div>
           <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-            Supermarkets
+            Магазини
           </h3>
 
           <div className="space-y-2.5">
@@ -124,7 +124,7 @@ export function FilterPanel({
       {Array.isArray(categories) && (
         <div style={{marginBottom: 10, marginTop: 10}}>
           <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-            Category
+            Категория
           </h3>
 
           <Select
@@ -134,11 +134,11 @@ export function FilterPanel({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="All categories" />
+              <SelectValue placeholder="Всички категории" />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">Всички категории</SelectItem>
 
               {categories.map((category) => (
                 <SelectItem
@@ -156,7 +156,7 @@ export function FilterPanel({
       {/* Price Range */}
       <div>
         <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
-          Price range: €{priceRange[0]} – €{priceRange[1]}
+          Ценови диапазон: €{priceRange[0]} – €{priceRange[1]}
         </h3>
 
         <Slider

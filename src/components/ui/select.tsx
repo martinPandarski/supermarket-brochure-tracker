@@ -71,7 +71,7 @@ function SelectContent({
       "z-50 rounded-md border shadow-md",
       "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",
 
-      "max-h-[240px] overflow-hidden",
+      "max-h-[240px]",
 
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -80,7 +80,7 @@ function SelectContent({
     )}
   >
         <SelectScrollUpButton />
-        <SelectPrimitive.Viewport  className="p-2 h-full overflow-y-auto overscroll-contain scrollbar-thin">
+        <SelectPrimitive.Viewport  className="p-2 max-h-[200px] overflow-y-auto overscroll-contain scrollbar-thin">
           {children}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
