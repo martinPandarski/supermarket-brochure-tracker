@@ -77,35 +77,33 @@ export function FilterPanel({
     [categories],
   );
 
-  const selectClassNames = useMemo(() => ({
-    control: ({ isFocused }: {isFocused: boolean}) =>
-      [
-        "flex min-h-9 w-full rounded-md border px-3 py-1 text-sm",
-        "transition focus:outline-none",
-        isFocused ? "border-ring ring-2 ring-ring/50" : "border-input",
-        "bg-input-background text-foreground",
-      ].join(" "),
+  const selectClassNames = useMemo(
+    () => ({
+      control: ({ isFocused }: {isFocused: boolean}) =>
+        [
+          "flex min-h-9 w-full rounded-md border px-3 py-1 text-sm",
+          "transition focus:outline-none",
+          isFocused && "ring-2 ring-ring/50 border-ring",
+          "bg-transparent",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-    menu: () =>
-      isDark
-        ? "mt-1 rounded-md border bg-gray-800 text-gray-100 shadow-md"
-        : "mt-1 rounded-md border bg-white text-gray-900 shadow-md",
+      menu: () => "mt-1 rounded-md border shadow-md",
 
-    menuList: () =>
-      "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
+      menuList: () =>
+        "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
 
-    option: ({ isFocused, isSelected }: {isFocused: boolean, isSelected: boolean}) =>
-      [
-        "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
-        isFocused &&
-          (isDark
-            ? "bg-gray-700 text-gray-100"
-            : "bg-accent text-accent-foreground"),
-        isSelected && "font-medium",
-      ]
-        .filter(Boolean)
-        .join(" "),
-  }), [isDark]);
+      option: ({ isSelected }:{isSelected: boolean}) =>
+        [
+          "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
+          isSelected && "font-medium",
+        ]
+          .filter(Boolean)
+          .join(" "),
+    }),
+    [isDark],
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border dark:border-gray-700 space-y-5 transition-colors">
@@ -185,6 +183,27 @@ export function FilterPanel({
             menuPlacement="auto"
             menuShouldScrollIntoView
             classNames={selectClassNames}
+            theme={(baseTheme) => ({
+              ...baseTheme,
+              borderRadius: 6,
+              colors: {
+                ...baseTheme.colors,
+
+                // Core surfaces
+                neutral0: isDark ? "#1f2937" : "#ffffff", // menu bg
+                neutral80: isDark ? "#f9fafb" : "#111827", // text
+                neutral20: isDark ? "#374151" : "#d1d5db", // border
+                neutral30: isDark ? "#4b5563" : "#9ca3af",
+
+                // States
+                primary: isDark ? "#3b82f6" : "#2563eb",
+                primary25: isDark ? "#374151" : "#e5e7eb", // hover
+                primary50: isDark ? "#1f2937" : "#f3f4f6",
+
+                // Disabled
+                neutral10: isDark ? "#111827" : "#f9fafb",
+              },
+            })}
           />
         </div>
       )}
@@ -210,4 +229,3 @@ export function FilterPanel({
     </div>
   );
 }
-
