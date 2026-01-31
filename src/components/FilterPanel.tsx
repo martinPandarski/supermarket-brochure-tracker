@@ -1,33 +1,27 @@
-import { X } from "lucide-react"
-import { Button } from "./ui/button"
-import { Checkbox } from "./ui/checkbox"
-import { Label } from "./ui/label"
-import { Slider } from "./ui/slider"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"
-import { useState } from "react"
-import { api } from "../../axiosSetup"
-import { useQuery } from "@tanstack/react-query"
-import { Category, Supermarket } from "../types"
+import { X } from "lucide-react";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
+import { Slider } from "./ui/slider";
+import Select from "react-select";
+import { useMemo, useState } from "react";
+import { api } from "../../axiosSetup";
+import { useQuery } from "@tanstack/react-query";
+import { Category, Supermarket } from "../types";
 
 function toTitleCase(value: string) {
-  if (!value) return value
-  return value[0].toUpperCase() + value.slice(1).toLowerCase()
+  if (!value) return value;
+  return value[0].toUpperCase() + value.slice(1).toLowerCase();
 }
 
 interface FilterPanelProps {
-  selectedStore: string
-  selectedCategory: string
-  priceRange: [number, number]
-  onStoreToggle: (store: string) => void
-  onCategoryToggle: (category: string) => void
-  onPriceRangeChange: (range: [number, number]) => void
-  onReset: () => void
+  selectedStore: string;
+  selectedCategory: string;
+  priceRange: [number, number];
+  onStoreToggle: (store: string) => void;
+  onCategoryToggle: (category: string) => void;
+  onPriceRangeChange: (range: [number, number]) => void;
+  onReset: () => void;
 }
 
 export function FilterPanel({
@@ -43,28 +37,42 @@ export function FilterPanel({
     retry: false,
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data } = await api.get("/categories")
-      return data?.data as Category[]
+      const { data } = await api.get("/categories");
+      return data?.data as Category[];
     },
-  })
+  });
 
   const { data: supermarkets } = useQuery({
     retry: false,
     queryKey: ["supermarkets"],
     queryFn: async () => {
-      const { data } = await api.get("/supermarkets")
-      return data?.data as Supermarket[]
+      const { data } = await api.get("/supermarkets");
+      return data?.data as Supermarket[];
     },
-  })
+  });
 
   const hasActiveFilters =
     selectedStore.length > 0 ||
     selectedCategory.length > 0 ||
     priceRange[0] > 1 ||
-    priceRange[1] < 20
+    priceRange[1] < 20;
 
   const [innerSliderValue, setInnerSliderValue] =
-    useState<[number, number]>(priceRange)
+    useState<[number, number]>(priceRange);
+
+  const options = useMemo(
+    () =>
+      Array.isArray(categories)
+        ? [
+            { value: "all", label: "Всички категории" },
+            ...categories.map((category) => ({
+              value: category.name,
+              label: toTitleCase(category.name),
+            })),
+          ]
+        : [],
+    [categories],
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border dark:border-gray-700 space-y-5 transition-colors">
@@ -96,7 +104,7 @@ export function FilterPanel({
 
           <div className="space-y-2.5">
             {supermarkets.map((store) => {
-              const isChecked = selectedStore === store.slug
+              const isChecked = selectedStore === store.slug;
 
               return (
                 <div key={store.id} className="flex items-center space-x-2">
@@ -114,7 +122,7 @@ export function FilterPanel({
                     {store.name}
                   </Label>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -122,34 +130,29 @@ export function FilterPanel({
 
       {/* Categories (Select) */}
       {Array.isArray(categories) && (
-        <div style={{marginBottom: 10, marginTop: 10}}>
+        <div style={{ marginBottom: 10, marginTop: 10 }}>
           <h3 className="font-medium mb-3 text-sm sm:text-base dark:text-white">
             Категория
           </h3>
 
           <Select
-            value={selectedCategory || "all"}
-            onValueChange={(value: string) =>
-              onCategoryToggle(value === "all" ? "" : value)
+            value={
+              options.find(
+                (opt) => opt.value === (selectedCategory || "all"),
+              ) || options[0]
             }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Всички категории" />
-            </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="all">Всички категории</SelectItem>
-
-              {categories.map((category) => (
-                <SelectItem
-                  key={category.name}
-                  value={category.name}
-                >
-                  {toTitleCase(category.name)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(option) =>
+              onCategoryToggle(
+                option?.value === "all" ? "" : (option?.value ?? ""),
+              )
+            }
+            options={options}
+            placeholder="Всички категории"
+            isSearchable={false}
+            menuPlacement="auto"
+            menuShouldScrollIntoView
+            classNames={selectClassNames}
+          />
         </div>
       )}
 
@@ -167,12 +170,43 @@ export function FilterPanel({
           onValueChange={(value: [number, number]) =>
             setInnerSliderValue(value)
           }
-          onValueCommit={(value: [number, number]) =>
-            onPriceRangeChange(value)
-          }
+          onValueCommit={(value: [number, number]) => onPriceRangeChange(value)}
           className="mt-2"
         />
       </div>
     </div>
-  )
+  );
 }
+
+const selectClassNames = {
+  control: ({ isFocused }: { isFocused: boolean }) =>
+    [
+      "flex min-h-9 w-full rounded-md border bg-input-background px-3 py-1 text-sm",
+      "transition focus:outline-none",
+      isFocused ? "border-ring ring-2 ring-ring/50" : "border-input",
+    ].join(" "),
+
+  valueContainer: () => "p-0",
+  singleValue: () => "text-foreground",
+  placeholder: () => "text-muted-foreground",
+
+  indicatorsContainer: () => "gap-1",
+  dropdownIndicator: () => "text-muted-foreground hover:text-foreground",
+
+  menuPortal: () => "z-50",
+
+  menu: () =>
+    "mt-1 rounded-md border bg-popover text-popover-foreground shadow-md",
+
+  menuList: () =>
+    "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
+
+  option: ({ isFocused, isSelected }: { isFocused: boolean, isSelected: boolean }) =>
+    [
+      "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
+      isFocused && "bg-accent text-accent-foreground",
+      isSelected && "font-medium",
+    ]
+      .filter(Boolean)
+      .join(" "),
+};
