@@ -141,7 +141,7 @@ export default function Home() {
 
               <SheetContent side="left" className="w-[320px]">
                 <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
+                  <SheetTitle>Филтри</SheetTitle>
                 </SheetHeader>
 
                 <div className="mt-4">
@@ -182,15 +182,15 @@ export default function Home() {
           {/* Products */}
           <main className="lg:col-span-3">
             <div className="mb-4 text-gray-600 dark:text-gray-400">
-              {meta?.total ?? products.length} product
-              {meta?.total !== 1 ? "s" : ""} found
+              {meta?.total ?? products.length} продукт
+              {meta?.total !== 1 ? "и" : ""} открити
             </div>
 
             {products.length === 0 ? (
               <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
                 <ShoppingBag className="size-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                 <p className="text-gray-500 dark:text-gray-400">
-                  No products found
+                  Не са открити продукти
                 </p>
               </div>
             ) : (

@@ -63,24 +63,23 @@ function SelectContent({
   return (
     <SelectPrimitive.Portal>
     <SelectPrimitive.Content
-    position="popper"
-    side="bottom"
-    sideOffset={4}
-    avoidCollisions={false}
-    className={cn(
-      "z-50 rounded-md border shadow-md",
-      "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",
+  position="popper"
+  side="bottom"
+  sideOffset={4}
+  className={cn(
+    "z-50 rounded-md border shadow-md",
+    "bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100",
 
-      "max-h-[240px]",
+    "max-h-[var(--radix-select-content-available-height)] overflow-hidden",
 
-      "data-[state=open]:animate-in data-[state=closed]:animate-out",
-      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-      className
-    )}
-  >
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+    className
+  )}
+>
         <SelectScrollUpButton />
-        <SelectPrimitive.Viewport  className="p-2 max-h-[200px] overflow-y-auto overscroll-contain scrollbar-thin">
+        <SelectPrimitive.Viewport    className="p-2 max-h-[240px] overflow-y-auto overscroll-contain scrollbar-thin">
           {children}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
