@@ -3,12 +3,13 @@ import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { Slider } from "./ui/slider";
-import Select from "react-select";
+import Select, {type StylesConfig} from "react-select";
 import { useMemo, useState } from "react";
 import { api } from "../../axiosSetup";
 import { useQuery } from "@tanstack/react-query";
 import { Category, Supermarket } from "../types";
 import { useTheme } from "next-themes";
+
 
 function toTitleCase(value: string) {
   if (!value) return value;
@@ -73,37 +74,10 @@ export function FilterPanel({
               label: toTitleCase(category.name),
             })),
           ]
-        : [],
+        : [{value: 'all', label: 'Всички категории'}],
     [categories],
   );
 
-  const selectClassNames = useMemo(
-    () => ({
-      control: ({ isFocused }: {isFocused: boolean}) =>
-        [
-          "flex min-h-9 w-full rounded-md border px-3 py-1 text-sm",
-          "transition focus:outline-none",
-          isFocused && "ring-2 ring-ring/50 border-ring",
-          "bg-transparent",
-        ]
-          .filter(Boolean)
-          .join(" "),
-
-      menu: () => "mt-1 rounded-md border shadow-md",
-
-      menuList: () =>
-        "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
-
-      option: ({ isSelected }:{isSelected: boolean}) =>
-        [
-          "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
-          isSelected && "font-medium",
-        ]
-          .filter(Boolean)
-          .join(" "),
-    }),
-    [isDark],
-  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border dark:border-gray-700 space-y-5 transition-colors">
@@ -182,28 +156,7 @@ export function FilterPanel({
             isSearchable={false}
             menuPlacement="auto"
             menuShouldScrollIntoView
-            classNames={selectClassNames}
-            theme={(baseTheme) => ({
-              ...baseTheme,
-              borderRadius: 6,
-              colors: {
-                ...baseTheme.colors,
-
-                // Core surfaces
-                neutral0: isDark ? "#1f2937" : "#ffffff", // menu bg
-                neutral80: isDark ? "#f9fafb" : "#111827", // text
-                neutral20: isDark ? "#374151" : "#d1d5db", // border
-                neutral30: isDark ? "#4b5563" : "#9ca3af",
-
-                // States
-                primary: isDark ? "#3b82f6" : "#2563eb",
-                primary25: isDark ? "#374151" : "#e5e7eb", // hover
-                primary50: isDark ? "#1f2937" : "#f3f4f6",
-
-                // Disabled
-                neutral10: isDark ? "#111827" : "#f9fafb",
-              },
-            })}
+            styles={getSelectStyles(isDark)}
           />
         </div>
       )}
@@ -229,3 +182,85 @@ export function FilterPanel({
     </div>
   );
 }
+
+
+
+
+const getSelectStyles = (isDark: boolean): StylesConfig => ({
+  control: (base, state) => ({
+    ...base,
+    minHeight: 36,
+    backgroundColor: isDark ? "#1f2937" : "#ffffff",
+    borderColor: state.isFocused
+      ? "#3b82f6"
+      : isDark
+      ? "#374151"
+      : "#d1d5db",
+    boxShadow: state.isFocused
+      ? "0 0 0 2px rgba(59,130,246,0.4)"
+      : "none",
+    "&:hover": {
+      borderColor: "#3b82f6",
+    },
+  }),
+
+  valueContainer: (base) => ({
+    ...base,
+    padding: "0 8px",
+  }),
+
+  singleValue: (base) => ({
+    ...base,
+    color: isDark ? "#f9fafb" : "#111827",
+  }),
+
+  placeholder: (base) => ({
+    ...base,
+    color: isDark ? "#9ca3af" : "#6b7280",
+  }),
+
+  indicatorsContainer: (base) => ({
+    ...base,
+    color: isDark ? "#9ca3af" : "#6b7280",
+  }),
+
+  dropdownIndicator: (base) => ({
+    ...base,
+    padding: 4,
+    "&:hover": {
+      color: isDark ? "#e5e7eb" : "#111827",
+    },
+  }),
+
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 50,
+  }),
+
+  menu: (base) => ({
+    ...base,
+    backgroundColor: isDark ? "#1f2937" : "#ffffff",
+    border: `1px solid ${isDark ? "#374151" : "#d1d5db"}`,
+    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+    marginTop: 4,
+  }),
+
+  menuList: (base) => ({
+    ...base,
+    maxHeight: 240,
+    overflowY: "auto",
+    padding: 4,
+  }),
+
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused
+      ? isDark
+        ? "#374151"
+        : "#e5e7eb"
+      : "transparent",
+    color: isDark ? "#f9fafb" : "#111827",
+    cursor: "pointer",
+    padding: "6px 8px",
+  }),
+});
