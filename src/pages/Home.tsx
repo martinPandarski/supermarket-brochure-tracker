@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useLocation, useNavigate } from "react-router"
 import { useQuery } from "@tanstack/react-query"
 import { ShoppingBag, SlidersHorizontal } from "lucide-react"
 
@@ -33,20 +34,93 @@ import { useDebounce } from "../hooks/useDebounce"
 import getPaginationRange from "../utils/paginationHelper"
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedStore, setSelectedStore] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
-  const [priceRange, setPriceRange] = useState<[number, number]>([1, 100])
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // --- Parse URL params
+  const urlParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  )
+
+  console.log('location', location)
+
+  // --- STATE (initialized from URL)
+  const [searchQuery, setSearchQuery] = useState(
+    urlParams.get("search") ?? ""
+  )
+  const [selectedStore, setSelectedStore] = useState(
+    urlParams.get("store") ?? ""
+  )
+  const [selectedCategory, setSelectedCategory] = useState(
+    urlParams.get("category") ?? ""
+  )
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    Number(urlParams.get("min_price")) || 1,
+    Number(urlParams.get("max_price")) || 100,
+  ])
+  const [page, setPage] = useState(
+    Number(urlParams.get("page")) || 1
+  )
+
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(searchQuery, 400)
 
-  // Reset page when filters/search change
+  // --- Reset page when filters change
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch, selectedStore, selectedCategory, priceRange])
 
+  // --- Sync STATE → URL
+  useEffect(() => {
+    const params = new URLSearchParams()
+
+    if (searchQuery) params.set("search", searchQuery)
+    if (selectedStore) params.set("store", selectedStore)
+    if (selectedCategory) params.set("category", selectedCategory)
+
+    if (priceRange[0] !== 1) {
+      params.set("min_price", String(priceRange[0]))
+    }
+    if (priceRange[1] !== 100) {
+      params.set("max_price", String(priceRange[1]))
+    }
+
+    if (page !== 1) params.set("page", String(page))
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: params.toString(),
+      },
+      { replace: true }
+    )
+  }, [
+    searchQuery,
+    selectedStore,
+    selectedCategory,
+    priceRange,
+    page,
+    navigate,
+    location.pathname,
+  ])
+
+  // --- Sync URL → STATE (back / forward navigation)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+
+    setSearchQuery(params.get("search") ?? "")
+    setSelectedStore(params.get("store") ?? "")
+    setSelectedCategory(params.get("category") ?? "")
+    setPriceRange([
+      Number(params.get("min_price")) || 1,
+      Number(params.get("max_price")) || 100,
+    ])
+    setPage(Number(params.get("page")) || 1)
+  }, [location.search])
+
+  // --- DATA FETCH
   const { data, isPending, error } = useQuery({
     retry: false,
     queryKey: [
@@ -90,6 +164,7 @@ export default function Home() {
     (selectedCategory ? 1 : 0) +
     (priceRange[0] > 1 || priceRange[1] < 100 ? 1 : 0)
 
+  // --- LOADING / ERROR
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -114,7 +189,9 @@ export default function Home() {
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <ShoppingBag className="size-8 text-blue-600 dark:text-blue-400" />
-              <h1 className="text-2xl dark:text-white">Brochure Search</h1>
+              <h1 className="text-2xl dark:text-white">
+                Brochure Search
+              </h1>
             </div>
             <ThemeToggle />
           </div>
@@ -162,8 +239,8 @@ export default function Home() {
       </header>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto mt-4 px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 ">
           {/* Desktop Filters */}
           <aside className="hidden lg:block">
             <div className="sticky top-32">
@@ -197,66 +274,70 @@ export default function Home() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                    />
                   ))}
                 </div>
 
                 {/* Pagination */}
-            {meta && meta.total_pages > 1 && (
-  <Pagination className="mt-8">
-    <PaginationContent className="flex-wrap">
-      {/* Previous */}
-      <PaginationItem>
-        <PaginationPrevious
-            size='default'
-          href="#"
-          aria-disabled={page === 1}
-          onClick={(e) => {
-            e.preventDefault()
-            if (page > 1) setPage(page - 1)
-          }}
-        />
-      </PaginationItem>
+                {meta && meta.total_pages > 1 && (
+                  <Pagination className="mt-4">
+                    <PaginationContent className="flex-wrap">
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          aria-disabled={page === 1}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (page > 1) setPage(page - 1)
+                          }}
+                        />
+                      </PaginationItem>
 
-      {/* Page numbers with ellipsis */}
-      {getPaginationRange(page, meta.total_pages).map((item, index) =>
-        item === "ellipsis" ? (
-          <PaginationItem key={`ellipsis-${index}`}>
-            <PaginationEllipsis />
-          </PaginationItem>
-        ) : (
-          <PaginationItem key={item}>
-            <PaginationLink
-            size='default'
-              href="#"
-              isActive={page === item}
-              onClick={(e) => {
-                e.preventDefault()
-                setPage(item)
-              }}
-            >
-              {item}
-            </PaginationLink>
-          </PaginationItem>
-        )
-      )}
+                      {getPaginationRange(
+                        page,
+                        meta.total_pages
+                      ).map((item, index) =>
+                        item === "ellipsis" ? (
+                          <PaginationItem
+                            key={`ellipsis-${index}`}
+                          >
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={item}>
+                            <PaginationLink
+                              href="#"
+                              isActive={page === item}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                setPage(item)
+                              }}
+                            >
+                              {item}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      )}
 
-      {/* Next */}
-      <PaginationItem>
-        <PaginationNext
-            size='default'
-          href="#"
-          aria-disabled={page === meta.total_pages}
-          onClick={(e) => {
-            e.preventDefault()
-            if (page < meta.total_pages) setPage(page + 1)
-          }}
-        />
-      </PaginationItem>
-    </PaginationContent>
-  </Pagination>
-)}
-
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          aria-disabled={
+                            page === meta.total_pages
+                          }
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (page < meta.total_pages)
+                              setPage(page + 1)
+                          }}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </>
             )}
           </main>
