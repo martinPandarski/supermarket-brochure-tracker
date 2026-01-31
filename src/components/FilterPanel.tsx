@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { api } from "../../axiosSetup";
 import { useQuery } from "@tanstack/react-query";
 import { Category, Supermarket } from "../types";
+import { useTheme } from "next-themes";
 
 function toTitleCase(value: string) {
   if (!value) return value;
@@ -33,6 +34,8 @@ export function FilterPanel({
   onPriceRangeChange,
   onReset,
 }: FilterPanelProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { data: categories } = useQuery({
     retry: false,
     queryKey: ["categories"],
@@ -73,6 +76,36 @@ export function FilterPanel({
         : [],
     [categories],
   );
+
+  const selectClassNames = useMemo(() => ({
+    control: ({ isFocused }: {isFocused: boolean}) =>
+      [
+        "flex min-h-9 w-full rounded-md border px-3 py-1 text-sm",
+        "transition focus:outline-none",
+        isFocused ? "border-ring ring-2 ring-ring/50" : "border-input",
+        "bg-input-background text-foreground",
+      ].join(" "),
+
+    menu: () =>
+      isDark
+        ? "mt-1 rounded-md border bg-gray-800 text-gray-100 shadow-md"
+        : "mt-1 rounded-md border bg-white text-gray-900 shadow-md",
+
+    menuList: () =>
+      "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
+
+    option: ({ isFocused, isSelected }: {isFocused: boolean, isSelected: boolean}) =>
+      [
+        "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
+        isFocused &&
+          (isDark
+            ? "bg-gray-700 text-gray-100"
+            : "bg-accent text-accent-foreground"),
+        isSelected && "font-medium",
+      ]
+        .filter(Boolean)
+        .join(" "),
+  }), [isDark]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border dark:border-gray-700 space-y-5 transition-colors">
@@ -178,35 +211,3 @@ export function FilterPanel({
   );
 }
 
-const selectClassNames = {
-  control: ({ isFocused }: { isFocused: boolean }) =>
-    [
-      "flex min-h-9 w-full rounded-md border bg-input-background px-3 py-1 text-sm",
-      "transition focus:outline-none",
-      isFocused ? "border-ring ring-2 ring-ring/50" : "border-input",
-    ].join(" "),
-
-  valueContainer: () => "p-0",
-  singleValue: () => "text-foreground",
-  placeholder: () => "text-muted-foreground",
-
-  indicatorsContainer: () => "gap-1",
-  dropdownIndicator: () => "text-muted-foreground hover:text-foreground",
-
-  menuPortal: () => "z-50",
-
-  menu: () =>
-    "mt-1 rounded-md border bg-popover text-popover-foreground shadow-md",
-
-  menuList: () =>
-    "max-h-60 overflow-y-auto overscroll-contain scrollbar-thin p-1",
-
-  option: ({ isFocused, isSelected }: { isFocused: boolean, isSelected: boolean }) =>
-    [
-      "cursor-pointer rounded-sm px-2 py-1.5 text-sm",
-      isFocused && "bg-accent text-accent-foreground",
-      isSelected && "font-medium",
-    ]
-      .filter(Boolean)
-      .join(" "),
-};
